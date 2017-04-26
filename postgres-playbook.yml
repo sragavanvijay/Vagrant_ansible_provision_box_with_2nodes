@@ -1,0 +1,32 @@
+---
+- hosts: web1
+  become: yes
+  gather_facts: yes
+
+  tasks:
+  - name: ensure apt cache is up to date
+    apt: update_cache=yes
+  - name: ensure packages are installed
+    apt: name={{item}}
+    with_items:
+        - postgresql
+        - libpq-dev
+        - python-psycopg2
+  
+- hosts: web1
+  become: yes
+  become_user: postgres
+  gather_facts: yes
+
+  vars:
+   dbname: myapp
+   dbuser: postgres
+   dbpassword: postgres
+
+  tasks:
+   - name: ensure database is created
+     postgresql_db: name={{dbname}}
+
+   - name: ensure user has access to database
+     postgresql_user: db={{dbname}} name={{dbuser}} password={{dbpassword}} priv=ALL
+ 
